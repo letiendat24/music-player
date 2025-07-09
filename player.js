@@ -56,7 +56,7 @@ const player = {
             name: "Thiên lý ơi",
             singer: "Meo Meo",
             thumb: "https://avatar-ex-swe.nixcdn.com/song/2024/02/23/9/a/8/4/1708658535903.jpg"
-        }
+        },
     ],
     currentIndex: 0,
     currentSongElement: null,
@@ -71,7 +71,6 @@ const player = {
     start() {
         this.render1();
         this.loadCurrentSong();
-        
         //Dom events
         // init Animation for 
         this.cdThumbAnimate = this.cdThumb.animate([{ transform: "rotate(360deg)" }], {
@@ -87,6 +86,7 @@ const player = {
             this.playIconElement.classList.remove("fa-play");
             this.playIconElement.classList.add("fa-pause");
             this.cdThumbAnimate.play();
+
         };
         this.audioElement.onpause = () => {
             console.log("paused");
@@ -120,6 +120,10 @@ const player = {
             if (this.progressElement.seeking) return;
             const progress = (this.audioElement.currentTime / this.audioElement.duration) * 100;
             this.progressElement.value = progress || 0;
+            this.nowTime.textContent = this.handleTime(this.audioElement.currentTime);
+        }
+        this.audioElement.onloadedmetadata = () => {
+            this.leftTime.textContent = `-${this.handleTime(this.audioElement.duration-this.audioElement.currentTime)}`;
         }
 
         this.progressElement.onmousedown = () => {
@@ -131,6 +135,7 @@ const player = {
             // change time 
             this.audioElement.currentTime = (positionTime / 100) * this.audioElement.duration;
             this.progressElement.seeking = false;
+
         }
 
         //next song when ENDED currentSong
@@ -149,7 +154,7 @@ const player = {
         // this.cdThumb.onclick = () => {
         //     this.lyric.style.transform = "translateX(-100%)";
         // } 
-        
+
     },
     handleNextOrPrev(step) {
         this.isPlaying = true;
@@ -222,71 +227,74 @@ const player = {
         } else {
             this.audioElement.pause();
         }
-    }, 
-    handleTime() {
-        return `${this.audioElement.currentTime / 60}:${this.audioElement.currentTime-(this.audioElement.currentTime / 60)}`;
     },
-    // render() {
-    //     const html = this.songs.map((song, index) => {
-    //         return `<div class="song ${index === this.currentIndex ? "active" : ""} ">
-    //   <div class="thumb" style="background-image: url(${song.thumb})">
-    //   </div>
-    //   <div class="body">
-    //     <h3 class="title">${song.name}</h3>
-    //     <p class="author">${song.singer}</p>
-    //   </div>
-    //   <div class="option">
-    //     <i class="fas fa-ellipsis-h"></i>
-    //   </div>
-    // </div>`
-    //     }).join("")
-    //     this.playlistElement.innerHTML = html;
-    // },
-    render1() {
-        this.playlistElement.innerHTML = "";
-        const frag = document.createDocumentFragment();
+    handleTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins < 10 ? "0" + mins : mins}:${secs < 10 ? "0" + secs : secs}`;
+    },
+// render() {
+//     const html = this.songs.map((song, index) => {
+//         return `<div class="song ${index === this.currentIndex ? "active" : ""} ">
+//   <div class="thumb" style="background-image: url(${song.thumb})">
+//   </div>
+//   <div class="body">
+//     <h3 class="title">${song.name}</h3>
+//     <p class="author">${song.singer}</p>
+//   </div>
+//   <div class="option">
+//     <i class="fas fa-ellipsis-h"></i>
+//   </div>
+// </div>`
+//     }).join("")
+//     this.playlistElement.innerHTML = html;
+// },
+render1() {
+    this.playlistElement.innerHTML = "";
+    const frag = document.createDocumentFragment();
 
-        this.songs.forEach((song, index) => {
+    this.songs.forEach((song, index) => {
 
-            const songEl = document.createElement("div");
-            songEl.className = "song";
-            if (index === this.currentIndex) {
-                songEl.classList.add("active");
-                this.currentSongElement = songEl;
-            }
+        const songEl = document.createElement("div");
+        songEl.className = "song";
+        if (index === this.currentIndex) {
+            songEl.classList.add("active");
+            this.currentSongElement = songEl;
+        }
 
-            const thumb = document.createElement("div");
-            thumb.className = "thumb";
-            thumb.style.backgroundImage = `url(${song.thumb})`;
-            
-            const body = document.createElement("div");
-            body.className = "body";
-
-            const title = document.createElement("h3");
-            title.className = "title";
-            title.textContent = song.name;
-
-            const author = document.createElement("p");
-            author.className = "author";
-            author.textContent = song.singer;
-
-            body.append(title, author);
-
-            const option = document.createElement("div");
-            option.className = "option";
-            option.innerHTML = '<i class="fas fa-ellipsis-h"></i>';
+        const thumb = document.createElement("div");
+        thumb.className = "thumb";
+        thumb.style.backgroundImage = `url(${song.thumb})`;
 
 
-            songEl.append(thumb, body, option);
-            songEl.dataset.index = index;
-            frag.appendChild(songEl);
+        const body = document.createElement("div");
+        body.className = "body";
 
-        });
+        const title = document.createElement("h3");
+        title.className = "title";
+        title.textContent = song.name;
+
+        const author = document.createElement("p");
+        author.className = "author";
+        author.textContent = song.singer;
+
+        body.append(title, author);
+
+        const option = document.createElement("div");
+        option.className = "option";
+        option.innerHTML = '<i class="fas fa-ellipsis-h"></i>';
 
 
-        this.playlistElement.appendChild(frag);
-        requestAnimationFrame(() => this.handleScrollBar());
-    }
+        songEl.append(thumb, body, option);
+        songEl.dataset.index = index;
+        frag.appendChild(songEl);
+
+    });
+
+
+    this.playlistElement.appendChild(frag);
+    requestAnimationFrame(() => this.handleScrollBar());
+}
 
 }
 
